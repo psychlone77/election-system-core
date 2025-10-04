@@ -5,10 +5,6 @@ This workspace contains three servers and a shared helper module.
 ## Architecture Diagram
 
 ```mermaid
----
-config:
-  theme: base
----
 flowchart TB
  subgraph VoterManagement["Voter Management & Support"]
         VR["Voter Registry Database"]
