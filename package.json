@@ -1,0 +1,19 @@
+{
+  "name": "election-system-core",
+  "private": true,
+  "workspaces": [
+    "servers/*",
+    "shared"
+  ],
+  "scripts": {
+    "start:eligibility": "npm --workspace servers/eligibility-server run start",
+    "start:ballot": "npm --workspace servers/ballot-box-server run start",
+    "start:tallying": "npm --workspace servers/tallying-server run start",
+    "start:all": "npm run start:eligibility & npm run start:ballot & npm run start:tallying"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  }
+}

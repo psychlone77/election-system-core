@@ -1,0 +1,57 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# npm workspace / monorepo
+**/node_modules/
+**/dist/
+**/build/
+**/.turbo/
+
+# Environment files
+.env.*.local
+.env.local
+.env.test
+.env.production
+.env.development
+.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Mac
+*.swp
+
+# Misc
+coverage/
+.nyc_output/
+.cache/
+
+# Lockfiles for Windows
+Desktop.ini
+
+# Ignore the workspace package installs
+shared/node_modules/
+servers/*/node_modules/
+
+# VS Code recommended workspace settings (if any)
+.vscode/settings.json
+.vscode/tasks.json
