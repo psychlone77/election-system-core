@@ -1,5 +1,9 @@
 {
   "name": "@election-system/shared",
   "version": "1.0.0",
-  "main": "index.js"
+  "main": "index.js",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  }
 }

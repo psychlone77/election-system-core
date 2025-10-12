@@ -1,5 +1,5 @@
-const express = require("express");
-const { loadConfig, logger } = require("../../../shared");
+import express, { json } from "express";
+import { loadConfig, logger } from "@election-system/shared";
 
 // Load environment variables (from root .env or server .env if present)
 loadConfig();
@@ -7,7 +7,7 @@ loadConfig();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(express.json());
+app.use(json());
 
 app.get("/", (req, res) => res.json({ service: "eligibility-server", status: "running" }));
 app.get("/health", (req, res) => res.json({ ok: true }));

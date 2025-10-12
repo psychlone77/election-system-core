@@ -1,5 +1,5 @@
-const express = require("express");
-const { loadConfig, logger } = require("../../../shared");
+import express from "express";
+import { loadConfig, logger } from "@election-system/shared";
 
 loadConfig();
 
