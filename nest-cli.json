@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/eligibility-server/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/eligibility-server/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/eligibility-server",
+  "projects": {
+    "ballot-box-server": {
+      "type": "application",
+      "root": "apps/ballot-box-server",
+      "entryFile": "main",
+      "sourceRoot": "apps/ballot-box-server/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ballot-box-server/tsconfig.app.json"
+      }
+    },
+    "eligibility-server": {
+      "type": "application",
+      "root": "apps/eligibility-server",
+      "entryFile": "main",
+      "sourceRoot": "apps/eligibility-server/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/eligibility-server/tsconfig.app.json"
+      }
+    },
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/tsconfig.lib.json"
+      }
+    },
+    "tallying-server": {
+      "type": "application",
+      "root": "apps/tallying-server",
+      "entryFile": "main",
+      "sourceRoot": "apps/tallying-server/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/tallying-server/tsconfig.app.json"
+      }
+    }
+  }
+}

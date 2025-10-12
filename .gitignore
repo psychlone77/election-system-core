@@ -1,54 +1,56 @@
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# npm workspace / monorepo
-**/node_modules/
-**/dist/
-**/build/
-**/.turbo/
-
-# Environment files
-.env.*.local
-.env.local
-.env.test
-.env.production
-.env.development
-.env.example
-
-# OS files
-.DS_Store
-Thumbs.db
+# compiled output
+/dist
+/node_modules
+/build
 
 # Logs
 logs
 *.log
 npm-debug.log*
+pnpm-debug.log*
 yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
-# Editor directories and files
-.vscode/
-.idea/
-*.sublime-project
+# OS
+.DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
 *.sublime-workspace
 
-# Mac
-*.swp
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
-# Misc
-coverage/
-.nyc_output/
-.cache/
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
-# Lockfiles for Windows
-Desktop.ini
+# temp directory
+.temp
+.tmp
 
-# Ignore the workspace package installs
-shared/node_modules/
-servers/*/node_modules/
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# VS Code recommended workspace settings (if any)
-.vscode/settings.json
-.vscode/tasks.json
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
