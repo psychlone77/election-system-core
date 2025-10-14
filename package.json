@@ -1,5 +1,5 @@
 {
-  "name": "eligibility-server",
+  "name": "election-system-core",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -12,12 +12,11 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/eligibility-server/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/eligibility-server/test/jest-e2e.json"
+    "start:eligibility": "cross-env PORT=3001 nest start eligibility-server --watch",
+    "start:ballot": "cross-env PORT=3002 nest start ballot-box-server --watch",
+    "start:tally": "cross-env PORT=3003 nest start tallying-server --watch",
+    "start:all": "concurrently -n ELI,BAL,TAL -c cyan,magenta,yellow \"npm run start:eligibility\" \"npm run start:ballot\" \"npm run start:tally\"",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -36,6 +35,8 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",

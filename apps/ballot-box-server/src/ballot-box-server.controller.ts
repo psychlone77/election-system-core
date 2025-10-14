@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { BallotBoxServerService } from './ballot-box-server.service';
+import type { ServerCheck } from '@election-system-core/shared';
 
 @Controller()
 export class BallotBoxServerController {
@@ -8,7 +9,7 @@ export class BallotBoxServerController {
   ) {}
 
   @Get()
-  getHello(): string {
-    return this.ballotBoxServerService.getHello();
+  getCheck(): ServerCheck {
+    return this.ballotBoxServerService.getCheck();
   }
 }

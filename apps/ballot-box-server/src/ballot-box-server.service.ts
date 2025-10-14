@@ -1,8 +1,12 @@
+import { ServerCheck } from '@election-system-core/shared';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class BallotBoxServerService {
-  getHello(): string {
-    return 'Hello World!';
+  getCheck(): ServerCheck {
+    return {
+      service: 'ballot-box-server',
+      status: 'running',
+    };
   }
 }
