@@ -10,4 +10,9 @@ export class AppController {
   getCheck(): ServerCheck {
     return this.appService.getCheck();
   }
+
+  @Get('eligible-voters')
+  getEligibleVoters() {
+    return this.appService.getEligibleVoters();
+  }
 }
