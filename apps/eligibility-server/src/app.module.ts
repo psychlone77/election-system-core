@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '@app/database';
 import { EligibleVoter } from '@app/database/entities/eligible-voters';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { RegisteredVoters } from '@app/database/entities/registered-voters';
+import { IssuedToken } from '@app/database/entities/issued-tokens';
 
 @Module({
   imports: [
@@ -12,8 +14,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       envFilePath: './apps/eligibility-server/.env',
       isGlobal: true,
     }),
-    DatabaseModule.forRoot({ prefix: 'ELIG', entities: [EligibleVoter] }), // will read ELIG_DB_* env vars
-    TypeOrmModule.forFeature([EligibleVoter]),
+    DatabaseModule.forRoot({
+      prefix: 'ELIG',
+      entities: [EligibleVoter],
+    }), // will read ELIG_DB_* env vars
+    DatabaseModule.forRoot({
+      prefix: 'REG',
+      entities: [RegisteredVoters, IssuedToken],
+    }), // will read REG_DB_* env vars
+    TypeOrmModule.forFeature([EligibleVoter, RegisteredVoters, IssuedToken]),
   ],
   controllers: [AppController],
   providers: [AppService],

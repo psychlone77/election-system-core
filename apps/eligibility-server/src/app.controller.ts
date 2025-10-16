@@ -1,6 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AppService } from './app.service';
-import type { ServerCheck } from '@election-system-core/shared/types';
+import type {
+  RegisterDto,
+  ServerCheck,
+} from '@election-system-core/shared/types';
 
 @Controller()
 export class AppController {
@@ -14,5 +17,11 @@ export class AppController {
   @Get('eligible-voters')
   getEligibleVoters() {
     return this.appService.getEligibleVoters();
+  }
+
+  @Post('register')
+  async register(@Body() body: RegisterDto) {
+    const { NIC, registration_code, public_key } = body;
+    return this.appService.registerVoter(NIC, registration_code, public_key);
   }
 }

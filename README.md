@@ -44,6 +44,59 @@ flowchart TB
     SystemLogs@{ shape: cyl}
 ```
 
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+  participant VD as Voter Device
+  participant ES as Eligibilty Server
+  participant EDB as Election Database
+  participant BBS as Ballot Box Server
+  participant BDB as Ballot Token Database
+  participant PBB as Ballot Storage
+  participant TA as Tallying Server
+
+  autonumber
+  VD ->> VD: 1. Generate token & blind_token
+  Note right of VD: Voter holds VoterPrivateKey
+  VD ->> ES: 2. Request token({NIC, blind_token}, signature)
+  Note over VD, ES: Signed with VoterPrivateKey
+  ES ->> EDB: 3. Fetch VoterPublicKey for NIC
+  ES -->> ES: 4. Verify request signature
+  alt Voter is eligible
+    ES ->> EDB: 5. Check if token already issued for NIC
+    Note right of EDB: is_token_issued == false
+    ES ->> EDB: 6. Mark voter as 'token-issued'
+    ES -->> ES: 7. Sign blinded_token
+    Note left of ES: Signed with ESPrivateKey
+    ES -->> VD: 8. Return blind_signature
+  else Voter not eligible or already claimed
+    ES -->> VD: 9. Return error
+  end
+  VD ->> VD: 10. Unblind signature to get (token, valid_signature)
+  VD ->> VD: 11. Encrypt ballot
+  Note right of VD: Encrypt with TAPublicKey
+  VD ->> BBS: 12. Submit {EncryptedBallot, (token, valid_signature)}
+  BBS -->> BBS: 13. Verify token signature
+  Note left of BBS: Verify with ESPublicKey
+  BBS ->> BDB: 14. Check if token has been spent
+  alt Token is not spent
+    BBS ->> BDB: 15. Add token to 'spent tokens' list
+    BBS ->> PBB: 16. Store EncryptedBallot on PBB
+    BBS -->> VD: 17. Return Receipt with BallotID
+  else Token already spent
+    BBS -->> VD: 18. Return error (double vote attempt)
+  end
+  Note over PBB, TA: After voting period ends...
+  TA ->> PBB: 19. Read all EncryptedBallots
+  loop for each ballot
+    TA -->> TA: 20. Generate partial decryptions
+    Note right of TA: Each uses their private key share
+  end
+  TA -->> TA: 21. Combine 't' of 'n' shares to decrypt votes
+  TA ->> PBB: 22. Publish final tally with the signature and Election Database
+```
+
 Start individual servers from the repository root:
 
 ```powershell

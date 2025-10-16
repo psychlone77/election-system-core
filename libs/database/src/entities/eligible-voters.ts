@@ -13,4 +13,7 @@ export class EligibleVoter {
 
   @Column('int')
   age: number;
+
+  @Column({ name: 'registration_code' })
+  registration_code: string;
 }
