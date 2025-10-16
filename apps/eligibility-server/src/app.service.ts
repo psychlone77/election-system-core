@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { getPublicKeyFromPemFile } from '@app/crypto/helper';
+import { getPrivateKeyFromPemFile } from '@app/crypto/key-store';
 
 @Injectable()
 export class AppService {
@@ -114,13 +114,13 @@ export class AppService {
       throw new BadRequestException('invalid signature');
     }
 
-    const esPrivateKey = await getPublicKeyFromPemFile(
-      process.env.ES_PRIVATE_KEY_PATH || 'es-private-key.pem',
+    const esPrivateKey = await getPrivateKeyFromPemFile(
+      process.env.SECRET_FOLDER_PATH,
     );
     const suite = cryptoHelpers.blindrsa.createSuite();
     const blindSignature = await cryptoHelpers.blindrsa.signBlinded(
       suite,
-      esPrivateKey,
+      esPrivateKey.privateKey,
       blindedTokenStr,
     );
 
