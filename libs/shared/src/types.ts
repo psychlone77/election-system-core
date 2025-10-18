@@ -8,3 +8,9 @@ export type RegisterDto = {
   registration_code: string;
   public_key: string;
 };
+
+export type RequestTokenDto = {
+  NIC: string;
+  blinded_token: string;
+  signature: string;
+};

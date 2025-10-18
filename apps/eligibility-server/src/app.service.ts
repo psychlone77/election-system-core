@@ -2,7 +2,6 @@ import { EligibleVoter } from '@app/database/entities/eligible-voters';
 import { RegisteredVoters } from '@app/database/entities/registered-voters';
 import { ServerCheck } from '@election-system-core/shared/types';
 import { IssuedToken } from '@app/database/entities/issued-tokens';
-import * as cryptoHelpers from '@app/crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -10,7 +9,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { getPrivateKeyFromPemFile } from '@app/crypto/key-store';
+import {
+  getPrivateKeyFromPemFile,
+  getPublicKeyFromPemFile,
+} from '@app/crypto/key-store';
+import { blindrsa, ed25519 } from '@app/crypto';
 
 @Injectable()
 export class AppService {
@@ -30,6 +33,10 @@ export class AppService {
   }
   getEligibleVoters() {
     return this.eligibleVoterRepository.find();
+  }
+
+  getPublicKey() {
+    return getPublicKeyFromPemFile(process.env.SECRET_FOLDER_PATH);
   }
 
   async registerVoter(
@@ -105,7 +112,7 @@ export class AppService {
         : Buffer.from(signature as any).toString('base64');
 
     // Verify the Ed25519 signature over the blindedToken using the stored public key
-    const ok = cryptoHelpers.ed25519.verify(
+    const ok = ed25519.verify(
       registered.public_key,
       blindedTokenStr,
       signatureStr,
@@ -117,8 +124,8 @@ export class AppService {
     const esPrivateKey = await getPrivateKeyFromPemFile(
       process.env.SECRET_FOLDER_PATH,
     );
-    const suite = cryptoHelpers.blindrsa.createSuite();
-    const blindSignature = await cryptoHelpers.blindrsa.signBlinded(
+    const suite = blindrsa.createSuite();
+    const blindSignature = await blindrsa.signBlinded(
       suite,
       esPrivateKey.privateKey,
       blindedTokenStr,

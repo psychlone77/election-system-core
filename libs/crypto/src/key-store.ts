@@ -2,17 +2,6 @@ import { webcrypto } from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-function toPem(header: string, buf: ArrayBuffer) {
-  const b64 = Buffer.from(buf).toString('base64');
-  const lines = b64.match(/.{1,64}/g) || [];
-  return `-----BEGIN ${header}-----\n${lines.join('\n')}\n-----END ${header}-----\n`;
-}
-
-function pemToDer(pem: string) {
-  const b64 = pem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
-  return Buffer.from(b64, 'base64');
-}
-
 async function fileExists(p: string) {
   try {
     await fs.access(p);
@@ -20,6 +9,21 @@ async function fileExists(p: string) {
   } catch {
     return false;
   }
+}
+
+export function toPem(header: string, buf: ArrayBuffer) {
+  const b64 = Buffer.from(buf).toString('base64');
+  const lines = b64.match(/.{1,64}/g) || [];
+  return `-----BEGIN ${header}-----\n${lines.join('\n')}\n-----END ${header}-----\n`;
+}
+
+export function pemToDer(pem: string) {
+  const b64 = pem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
+  return Buffer.from(b64, 'base64');
+}
+
+export async function pemToFile(pem: string, path: string) {
+  return await fs.writeFile(path, pem);
 }
 
 export async function ensureServerKeys(appName: string, secretsDir?: string) {
