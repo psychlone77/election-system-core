@@ -14,6 +14,7 @@ import {
   getPublicKeyFromPemFile,
 } from '@app/crypto/key-store';
 import { blindrsa, ed25519 } from '@app/crypto';
+import { Candidate } from '@app/database/entities/candidates';
 
 @Injectable()
 export class AppService {
@@ -24,6 +25,8 @@ export class AppService {
     private registeredVoterRepository: Repository<RegisteredVoters>,
     @InjectRepository(IssuedToken)
     private issuedTokenRepository: Repository<IssuedToken>,
+    @InjectRepository(Candidate)
+    private candidateRepository: Repository<Candidate>,
   ) {}
   getCheck(): ServerCheck {
     return {
@@ -37,6 +40,10 @@ export class AppService {
 
   getPublicKey() {
     return getPublicKeyFromPemFile(process.env.SECRET_FOLDER_PATH);
+  }
+
+  getCandidates() {
+    return this.candidateRepository.find();
   }
 
   async registerVoter(

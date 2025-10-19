@@ -14,7 +14,7 @@ import { BallotStorage } from '@app/database/entities/ballot-storage';
       isGlobal: true,
     }),
     DatabaseModule.forRoot({
-      prefix: 'REG',
+      prefix: 'ELECTION',
       entities: [SpentTokens],
     }),
     DatabaseModule.forRoot({

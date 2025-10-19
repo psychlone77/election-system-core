@@ -14,3 +14,5 @@ export type RequestTokenDto = {
   blinded_token: string;
   signature: string;
 };
+
+export type BallotPayload = Record<string, number>;

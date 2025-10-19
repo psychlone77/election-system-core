@@ -14,6 +14,12 @@ export class BallotStorage {
   encrypted_ballot: string;
 
   @Column()
+  iv: string;
+
+  @Column()
+  tag: string;
+
+  @Column()
   signature: string;
 
   @CreateDateColumn({ type: 'timestamptz' })

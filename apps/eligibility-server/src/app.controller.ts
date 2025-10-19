@@ -25,6 +25,11 @@ export class AppController {
     return (await this.appService.getPublicKey()).publicPem;
   }
 
+  @Get('candidates')
+  async getCandidates() {
+    return this.appService.getCandidates();
+  }
+
   @Post('register')
   async register(@Body() body: RegisterDto) {
     const { NIC, registration_code, public_key } = body;
