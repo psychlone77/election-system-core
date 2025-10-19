@@ -37,6 +37,7 @@ export class DatabaseModule {
       imports: [
         ConfigModule,
         TypeOrmModule.forRootAsync({
+          name: prefix || 'default',
           imports: [ConfigModule],
           useFactory: (config: ConfigService) => ({
             type: 'postgres',

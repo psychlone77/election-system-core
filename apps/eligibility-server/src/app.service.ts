@@ -1,7 +1,4 @@
-import { EligibleVoter } from '@app/database/entities/eligible-voters';
-import { RegisteredVoters } from '@app/database/entities/registered-voters';
 import { ServerCheck } from '@election-system-core/shared/types';
-import { IssuedToken } from '@app/database/entities/issued-tokens';
 import {
   BadRequestException,
   ConflictException,
@@ -14,18 +11,23 @@ import {
   getPublicKeyFromPemFile,
 } from '@app/crypto/key-store';
 import { blindrsa, ed25519 } from '@app/crypto';
-import { Candidate } from '@app/database/entities/candidates';
+import {
+  EligibleVoter,
+  RegisteredVoters,
+  IssuedToken,
+  Candidate,
+} from '@app/database';
 
 @Injectable()
 export class AppService {
   constructor(
-    @InjectRepository(EligibleVoter)
+    @InjectRepository(EligibleVoter, 'ELIG')
     private eligibleVoterRepository: Repository<EligibleVoter>,
-    @InjectRepository(RegisteredVoters)
+    @InjectRepository(RegisteredVoters, 'ELECTION')
     private registeredVoterRepository: Repository<RegisteredVoters>,
-    @InjectRepository(IssuedToken)
+    @InjectRepository(IssuedToken, 'ELECTION')
     private issuedTokenRepository: Repository<IssuedToken>,
-    @InjectRepository(Candidate)
+    @InjectRepository(Candidate, 'ELECTION')
     private candidateRepository: Repository<Candidate>,
   ) {}
   getCheck(): ServerCheck {

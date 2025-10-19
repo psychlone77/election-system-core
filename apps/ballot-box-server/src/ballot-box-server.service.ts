@@ -11,9 +11,9 @@ import { getPrivateKeyFromPemFile, pemToDer } from '@app/crypto/key-store';
 @Injectable()
 export class BallotBoxServerService {
   constructor(
-    @InjectRepository(SpentTokens)
+    @InjectRepository(SpentTokens, 'ELECTION')
     private spentTokensRepository: Repository<SpentTokens>,
-    @InjectRepository(BallotStorage)
+    @InjectRepository(BallotStorage, 'BS')
     private ballotStorageRepository: Repository<BallotStorage>,
   ) {}
   getCheck(): ServerCheck {

@@ -10,9 +10,9 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class TallyingServerService {
   constructor(
-    @InjectRepository(BallotStorage)
+    @InjectRepository(BallotStorage, 'BS')
     private ballotStorageRepository: Repository<BallotStorage>,
-    @InjectRepository(Candidate)
+    @InjectRepository(Candidate, 'ELECTION')
     private candidateRepository: Repository<Candidate>,
   ) {}
   getCheck(): ServerCheck {

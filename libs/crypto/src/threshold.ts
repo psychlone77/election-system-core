@@ -24,7 +24,7 @@ export function ensureThresholdKeys(
   if (!fs.existsSync(secretsDir)) fs.mkdirSync(secretsDir, { recursive: true });
   if (!fs.existsSync(sharesDir)) fs.mkdirSync(sharesDir, { recursive: true });
 
-  const secret = secrets.random(256); // 256 bits
+  const secret = secrets.random(4096);
   const shares = secrets.share(secret, numShares, threshold);
 
   // Save public key (the secret in this context)

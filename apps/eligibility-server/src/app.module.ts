@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from '@app/database';
+import {
+  Candidate,
+  DatabaseModule,
+  IssuedToken,
+  RegisteredVoters,
+} from '@app/database';
 import { EligibleVoter } from '@app/database/entities/eligible-voters';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RegisteredVoters } from '@app/database/entities/registered-voters';
-import { IssuedToken } from '@app/database/entities/issued-tokens';
-import { Candidate } from '@app/database/entities/candidates';
 
 @Module({
   imports: [
@@ -23,7 +25,11 @@ import { Candidate } from '@app/database/entities/candidates';
       prefix: 'ELECTION',
       entities: [RegisteredVoters, IssuedToken, Candidate],
     }), // will read ELECTION_DB_* env vars
-    TypeOrmModule.forFeature([EligibleVoter, RegisteredVoters, IssuedToken]),
+    TypeOrmModule.forFeature([EligibleVoter], 'ELIG'),
+    TypeOrmModule.forFeature(
+      [RegisteredVoters, IssuedToken, Candidate],
+      'ELECTION',
+    ),
   ],
   controllers: [AppController],
   providers: [AppService],

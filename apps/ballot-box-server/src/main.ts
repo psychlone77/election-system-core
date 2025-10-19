@@ -21,6 +21,7 @@ async function loadPublicKeys() {
     }
   }
   if (esKey) {
+    console.log('Loaded public key from eligibility server.', esKey.data);
     process.env.ES_PUBLIC_PEM = esKey.data;
   } else {
     throw new Error('Failed to load public key from eligibility server.');
