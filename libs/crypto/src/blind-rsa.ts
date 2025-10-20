@@ -33,7 +33,11 @@ export async function blind(
   publicKey: CryptoKey,
 ) {
   const preparedMessage = suite.prepare(message);
-  return suite.blind(publicKey, preparedMessage);
+  const BlindOutput = await suite.blind(publicKey, preparedMessage);
+  return {
+    ...BlindOutput,
+    preparedMessage,
+  };
 }
 
 /**

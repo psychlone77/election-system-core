@@ -22,6 +22,20 @@ export function pemToDer(pem: string) {
   return Buffer.from(b64, 'base64');
 }
 
+export async function pemToCryptoKey(
+  pem: string,
+  type: 'public' | 'private',
+): Promise<CryptoKey> {
+  const der = pemToDer(pem);
+  return await webcrypto.subtle.importKey(
+    type === 'public' ? 'spki' : 'pkcs8',
+    der,
+    { name: 'RSA-PSS', hash: 'SHA-384' },
+    true,
+    [type === 'public' ? 'verify' : 'sign'],
+  );
+}
+
 export async function pemToFile(pem: string, path: string) {
   return await fs.writeFile(path, pem);
 }

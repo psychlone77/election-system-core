@@ -61,21 +61,21 @@ export class AppService {
       where: { NIC: nic },
     });
     if (!eligible) {
-      throw new BadRequestException('voter not eligible');
+      throw new BadRequestException('Voter not eligible');
     }
 
     if (
       !eligible.registration_code ||
       eligible.registration_code !== registrationCode
     ) {
-      throw new BadRequestException('invalid registration code');
+      throw new BadRequestException('Invalid Registration Code');
     }
 
     const already = await this.registeredVoterRepository.findOne({
       where: { NIC: nic },
     });
     if (already) {
-      throw new ConflictException('voter already registered');
+      throw new ConflictException('Voter already registered');
     }
 
     const record = this.registeredVoterRepository.create({
@@ -98,16 +98,17 @@ export class AppService {
     const eligible = await this.eligibleVoterRepository.findOne({
       where: { NIC: nic },
     });
-    if (!eligible) throw new BadRequestException('voter not eligible');
+    if (!eligible)
+      throw new BadRequestException('Voter not eligible or not found');
 
     const registered = await this.registeredVoterRepository.findOne({
       where: { NIC: nic },
     });
     if (!registered) {
-      throw new BadRequestException('voter not registered');
+      throw new BadRequestException('Voter not registered');
     }
     if (registered.token_issued) {
-      throw new ConflictException('token already issued for this NIC');
+      throw new ConflictException('Token already issued for this NIC');
     }
 
     // Normalize inputs: accept either Buffer/Uint8Array or string for blindedToken/signature
