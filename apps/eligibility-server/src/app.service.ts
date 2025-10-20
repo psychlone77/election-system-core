@@ -30,6 +30,7 @@ export class AppService {
     @InjectRepository(Candidate, 'ELECTION')
     private candidateRepository: Repository<Candidate>,
   ) {}
+
   getCheck(): ServerCheck {
     return {
       service: 'eligibility-server',
@@ -46,6 +47,22 @@ export class AppService {
 
   getCandidates() {
     return this.candidateRepository.find();
+  }
+
+  async postCandidate(
+    id: string,
+    name: string,
+    party: string,
+  ) {
+    if (!id || !name || !party) {
+      throw new BadRequestException('missing fields');
+    }
+    const record = this.candidateRepository.create({
+      id,
+      name,
+      party,
+    });
+    await this.candidateRepository.save(record);
   }
 
   async registerVoter(

@@ -30,6 +30,14 @@ export class AppController {
     return this.appService.getCandidates();
   }
 
+  @Post('post_candidates')
+  async postCandidate(
+    @Body() body: { id: string; name: string; party: string },
+  ) {
+    const { id, name, party } = body;
+    return this.appService.postCandidate(id, name, party);
+  }
+
   @Post('register')
   async register(@Body() body: RegisterDto) {
     const { NIC, registration_code, public_key } = body;
