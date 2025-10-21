@@ -10,4 +10,14 @@ export class TallyingServerController {
   getCheck(): ServerCheck {
     return this.tallyingServerService.getCheck();
   }
+
+  @Get('public-key')
+  getPublicKey() {
+    return this.tallyingServerService.getPublicKey();
+  }
+
+  @Get('results')
+  getResults() {
+    return this.tallyingServerService.startTallyingProcess();
+  }
 }

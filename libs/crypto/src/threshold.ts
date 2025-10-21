@@ -1,8 +1,10 @@
+import { subtle } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import secrets from 'secrets.js-grempe';
+import { toPem } from './key-store';
 
-export function ensureThresholdKeys(
+export async function ensureThresholdKeys(
   appName = 'tallying-server',
   secretsDir = './secrets',
   numShares = 5,
@@ -23,12 +25,26 @@ export function ensureThresholdKeys(
   // Generate new secret and shares
   if (!fs.existsSync(secretsDir)) fs.mkdirSync(secretsDir, { recursive: true });
   if (!fs.existsSync(sharesDir)) fs.mkdirSync(sharesDir, { recursive: true });
+  const { publicKey, privateKey } = await subtle.generateKey(
+    {
+      name: 'RSA-OAEP',
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([1, 0, 1]),
+      hash: 'SHA-256',
+    },
+    true,
+    ['encrypt', 'decrypt', 'wrapKey', 'unwrapKey'],
+  );
+  // Export privateKey to ArrayBuffer (PKCS8) and convert to hex
+  const pkcs8 = await subtle.exportKey('pkcs8', privateKey);
+  const privateKeyHex = Buffer.from(pkcs8).toString('hex');
+  const shares = secrets.share(privateKeyHex, numShares, threshold);
 
-  const secret = secrets.random(4096);
-  const shares = secrets.share(secret, numShares, threshold);
+  // Export publicKey to ArrayBuffer (SPKI) and save as PEM
+  const spki = await subtle.exportKey('spki', publicKey);
+  const pubKeyPem = toPem('PUBLIC KEY', spki);
 
-  // Save public key (the secret in this context)
-  fs.writeFileSync(pubKeyPath, secret, 'utf-8');
+  fs.writeFileSync(pubKeyPath, pubKeyPem, 'utf-8');
 
   // Save shares
   shares.forEach((share, idx) => {
@@ -39,7 +55,7 @@ export function ensureThresholdKeys(
 export function reconstructSecretFromShares(
   secretsDir: string,
   threshold: number,
-): string {
+): Promise<CryptoKey> {
   const shares = fs
     .readdirSync(secretsDir)
     .map((file) => fs.readFileSync(path.join(secretsDir, file), 'utf-8'));
@@ -48,5 +64,13 @@ export function reconstructSecretFromShares(
       `Not enough shares to reconstruct the secret. Required: ${threshold}, Found: ${shares.length}`,
     );
   }
-  return secrets.combine(shares);
+  const combinedHex = secrets.combine(shares);
+  const combinedBuffer = Buffer.from(combinedHex, 'hex');
+  return subtle.importKey(
+    'pkcs8',
+    combinedBuffer,
+    { name: 'RSA-OAEP', hash: { name: 'SHA-256' } },
+    true,
+    ['decrypt', 'unwrapKey'],
+  );
 }

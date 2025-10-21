@@ -15,4 +15,12 @@ export type RequestTokenDto = {
   signature: string;
 };
 
+export type SubmitBallotDto = {
+  encryptedBallot: string;
+  iv: string;
+  encryptedKey: string;
+  token: string;
+  token_signature: string;
+};
+
 export type BallotPayload = Record<string, number>;

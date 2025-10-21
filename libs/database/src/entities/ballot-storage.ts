@@ -1,13 +1,8 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('ballot_storage')
 export class BallotStorage {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   ballot_id: string;
 
   @Column('text')
@@ -17,10 +12,10 @@ export class BallotStorage {
   iv: string;
 
   @Column()
-  tag: string;
+  encrypted_key: string;
 
   @Column()
-  signature: string;
+  token: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;

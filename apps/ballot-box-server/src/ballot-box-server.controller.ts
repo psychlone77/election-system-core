@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { BallotBoxServerService } from './ballot-box-server.service';
-import type { ServerCheck } from '@election-system-core/shared';
+import type {
+  ServerCheck,
+  SubmitBallotDto,
+} from '@election-system-core/shared';
 
 @Controller()
 export class BallotBoxServerController {
@@ -13,9 +16,15 @@ export class BallotBoxServerController {
     return this.ballotBoxServerService.getCheck();
   }
 
+  @Get('public-key')
+  async getPublicKey() {
+    return this.ballotBoxServerService.getPublicKey();
+  }
+
   @Post('submit-ballot')
   async submitBallot(
-    @Body() body: { token: string; token_signature: string; ballot: string },
+    @Body()
+    body: SubmitBallotDto,
   ) {
     return this.ballotBoxServerService.submitBallot(body);
   }

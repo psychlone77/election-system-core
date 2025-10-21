@@ -120,9 +120,12 @@ export async function loadServerKeys(secretsDir?: string) {
   return { publicKey, privateKey, publicPem: pubPem, privatePem: privPem };
 }
 
-export async function getPublicKeyFromPemFile(secretsDir?: string) {
+export async function getPublicKeyFromPemFile(
+  secretsDir?: string,
+  fileName?: string,
+) {
   const dir = secretsDir || path.join(process.cwd());
-  const pubPath = path.join(dir, 'public.pem');
+  const pubPath = path.join(dir, fileName || 'public.pem');
 
   const pubPem = String(await fs.readFile(pubPath, 'utf-8'));
 
@@ -153,6 +156,49 @@ export async function getPrivateKeyFromPemFile(secretsDir?: string) {
     { name: 'RSA-PSS', hash: 'SHA-384' },
     true,
     ['sign'],
+  );
+
+  return { privateKey, privatePem: privPem };
+}
+
+export async function getPublicEncryptionKeyFromPemFile(
+  secretsDir?: string,
+  fileName?: string,
+) {
+  const dir = secretsDir || path.join(process.cwd());
+  const pubPath = path.join(dir, fileName || 'encryption-public.pem');
+
+  const pubPem = String(await fs.readFile(pubPath, 'utf-8'));
+
+  const pubDer = pemToDer(pubPem);
+
+  const publicKey = await webcrypto.subtle.importKey(
+    'spki',
+    pubDer,
+    { name: 'RSA-OAEP', hash: 'SHA-256' },
+    true,
+    ['encrypt'],
+  );
+  return { publicKey, publicPem: pubPem };
+}
+
+export async function getPrivateEncryptionKeyFromPemFile(
+  secretsDir?: string,
+  fileName?: string,
+) {
+  const dir = secretsDir || path.join(process.cwd());
+  const privPath = path.join(dir, fileName || 'encryption-private.pem');
+
+  const privPem = String(await fs.readFile(privPath, 'utf-8'));
+
+  const privDer = pemToDer(privPem);
+
+  const privateKey = await webcrypto.subtle.importKey(
+    'pkcs8',
+    privDer,
+    { name: 'RSA-OAEP', hash: 'SHA-256' },
+    true,
+    ['decrypt'],
   );
 
   return { privateKey, privatePem: privPem };

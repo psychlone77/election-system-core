@@ -1,4 +1,4 @@
-import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+import { randomBytes, createCipheriv } from 'crypto';
 
 export function generateAesKey(): Buffer {
   return randomBytes(32); // 256-bit
@@ -18,15 +18,18 @@ export function encryptAesGcm(plaintext: Buffer, key: Buffer) {
 
 export function decryptAesGcm(
   ciphertextB64: string,
-  key: Buffer,
+  key: CryptoKey,
   ivB64: string,
-  tagB64: string,
 ) {
   const iv = Buffer.from(ivB64, 'base64');
-  const tag = Buffer.from(tagB64, 'base64');
   const ciphertext = Buffer.from(ciphertextB64, 'base64');
-  const decipher = createDecipheriv('aes-256-gcm', key, iv);
-  decipher.setAuthTag(tag);
-  const plain = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-  return plain;
+  const decipher = crypto.subtle.decrypt(
+    {
+      name: 'AES-GCM',
+      iv: iv,
+    },
+    key,
+    ciphertext,
+  );
+  return decipher;
 }

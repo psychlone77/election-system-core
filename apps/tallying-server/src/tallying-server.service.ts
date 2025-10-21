@@ -1,4 +1,5 @@
 import { decryptAesGcm } from '@app/crypto/aes';
+import { getPublicEncryptionKeyFromPemFile } from '@app/crypto/key-store';
 import { reconstructSecretFromShares } from '@app/crypto/threshold';
 import { BallotStorage } from '@app/database/entities/ballot-storage';
 import { Candidate } from '@app/database/entities/candidates';
@@ -20,6 +21,13 @@ export class TallyingServerService {
       service: 'tallying-server',
       status: 'running',
     };
+  }
+  async getPublicKey() {
+    const { publicPem } = await getPublicEncryptionKeyFromPemFile(
+      process.env.SECRET_FOLDER_PATH,
+      'tallying-server.pub',
+    );
+    return publicPem;
   }
 
   private parseBallotBuffer(buf: Buffer): BallotPayload | null {
@@ -46,18 +54,18 @@ export class TallyingServerService {
 
   async startTallyingProcess() {
     // reconstruct private key (your threshold function returns string/Buffer)
-    const privateKeyString = reconstructSecretFromShares(
-      './apps/tallying-server/secrets',
+    const privateKey = await reconstructSecretFromShares(
+      './apps/tallying-server/secrets/tallying-server-shares',
       3,
     );
-    const privateKey = Buffer.from(privateKeyString, 'utf-8');
 
     const ballots = await this.ballotStorageRepository.find();
 
     // aggregated counts - initialize with candidates from DB so missing candidates are present with 0
     const tally = new Map<string, number>();
+    let candidates: Candidate[];
     try {
-      const candidates = await this.candidateRepository.find();
+      candidates = await this.candidateRepository.find();
       for (const c of candidates) {
         if (c && c.id) tally.set(c.id, 0);
       }
@@ -71,11 +79,26 @@ export class TallyingServerService {
 
     for (const ballot of ballots) {
       try {
-        const decrypted = decryptAesGcm(
-          ballot.encrypted_ballot,
+        console.log('Private Key:', privateKey);
+        const ballotKey = await crypto.subtle.unwrapKey(
+          'raw',
+          Buffer.from(ballot.encrypted_key, 'base64'),
           privateKey,
+          {
+            name: 'RSA-OAEP',
+          },
+          {
+            name: 'AES-GCM',
+            length: 256,
+          },
+          true,
+          ['decrypt'],
+        );
+        console.log('Ballot Key:', ballotKey);
+        const decrypted = await decryptAesGcm(
+          ballot.encrypted_ballot,
+          ballotKey,
           ballot.iv,
-          ballot.tag,
         ); // Buffer or Uint8Array
 
         const payload = this.parseBallotBuffer(Buffer.from(decrypted));
@@ -100,6 +123,7 @@ export class TallyingServerService {
     // Example: print results
     const results = Array.from(tally.entries()).map(([candidate, count]) => ({
       candidate,
+      name: candidates.find((c) => c.id === candidate)?.name ?? 'Unknown',
       count,
     }));
     console.log('Tally results:', results);

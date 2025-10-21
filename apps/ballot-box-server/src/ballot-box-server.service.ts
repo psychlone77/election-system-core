@@ -1,12 +1,16 @@
 import { BallotStorage } from '@app/database/entities/ballot-storage';
 import { SpentTokens } from '@app/database/entities/spent-tokens';
-import { ServerCheck } from '@election-system-core/shared';
+import { ServerCheck, SubmitBallotDto } from '@election-system-core/shared';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { webcrypto } from 'crypto';
 import * as blindrsa from '@app/crypto/blind-rsa';
-import { getPrivateKeyFromPemFile, pemToDer } from '@app/crypto/key-store';
+import {
+  getPrivateKeyFromPemFile,
+  getPublicKeyFromPemFile,
+  pemToDer,
+} from '@app/crypto/key-store';
 
 @Injectable()
 export class BallotBoxServerService {
@@ -23,15 +27,20 @@ export class BallotBoxServerService {
     };
   }
 
+  async getPublicKey() {
+    const { publicPem } = await getPublicKeyFromPemFile(
+      process.env.SECRET_FOLDER_PATH,
+    );
+    return publicPem;
+  }
+
   async submitBallot({
+    encryptedBallot,
+    iv,
+    encryptedKey,
     token,
     token_signature,
-    ballot,
-  }: {
-    token: string;
-    token_signature: string;
-    ballot: string;
-  }) {
+  }: SubmitBallotDto) {
     // 1) Load ES public key (path set by eligibility server at startup)
     const esPubPem = process.env.ES_PUBLIC_PEM;
     if (!esPubPem) {
@@ -51,7 +60,7 @@ export class BallotBoxServerService {
 
     // 2) Verify the blind signature over the token
     const suite = blindrsa.createSuite();
-    const prepared = suite.prepare(Buffer.from(token, 'utf-8'));
+    const prepared = Buffer.from(token, 'base64');
     const sigBuf = Buffer.from(token_signature, 'base64');
     const verified = await blindrsa.verify(
       suite,
@@ -66,16 +75,22 @@ export class BallotBoxServerService {
       where: { token },
     });
     if (existing) {
-      throw new BadRequestException('token already spent');
+      throw new BadRequestException('Token generated was already used');
     }
 
     // 4) Persist spent token
-    const spentToken = this.spentTokensRepository.create({ token });
+    const spentToken = this.spentTokensRepository.create({
+      token,
+    });
     await this.spentTokensRepository.save(spentToken);
 
     // 5) Store encrypted ballot and return signed receipt
     const ballotRecord = this.ballotStorageRepository.create({
-      encrypted_ballot: ballot,
+      ballot_id: crypto.randomUUID(),
+      encrypted_ballot: encryptedBallot,
+      iv,
+      encrypted_key: encryptedKey,
+      token,
     });
     const saved = await this.ballotStorageRepository.save(ballotRecord);
     const ballotId = saved.ballot_id;
@@ -83,7 +98,7 @@ export class BallotBoxServerService {
     // 6) Hash ballotId + encrypted ballot and sign with Ballot Box private key
     const dataToHash = Buffer.concat([
       Buffer.from(ballotId, 'utf8'),
-      Buffer.from(String(ballot), 'utf8'),
+      Buffer.from(String(encryptedBallot), 'utf8'),
     ]);
     const hashBuffer = await webcrypto.subtle.digest('SHA-256', dataToHash);
 
