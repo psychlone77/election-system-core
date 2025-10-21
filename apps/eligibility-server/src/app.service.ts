@@ -7,16 +7,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
+  concatUint8,
   getPrivateKeyFromPemFile,
   getPublicKeyFromPemFile,
 } from '@app/crypto/key-store';
 import { blindrsa, ed25519 } from '@app/crypto';
-import {
-  EligibleVoter,
-  RegisteredVoters,
-  IssuedToken,
-  Candidate,
-} from '@app/database';
+import { EligibleVoter, RegisteredVoters, Candidate } from '@app/database';
 
 @Injectable()
 export class AppService {
@@ -25,8 +21,6 @@ export class AppService {
     private eligibleVoterRepository: Repository<EligibleVoter>,
     @InjectRepository(RegisteredVoters, 'ELECTION')
     private registeredVoterRepository: Repository<RegisteredVoters>,
-    @InjectRepository(IssuedToken, 'ELECTION')
-    private issuedTokenRepository: Repository<IssuedToken>,
     @InjectRepository(Candidate, 'ELECTION')
     private candidateRepository: Repository<Candidate>,
   ) {}
@@ -49,11 +43,7 @@ export class AppService {
     return this.candidateRepository.find();
   }
 
-  async postCandidate(
-    id: string,
-    name: string,
-    party: string,
-  ) {
+  async postCandidate(id: string, name: string, party: string) {
     if (!id || !name || !party) {
       throw new BadRequestException('missing fields');
     }
@@ -108,6 +98,7 @@ export class AppService {
   }
 
   async requestToken(nic: string, blindedToken: string, signature: string) {
+    console.log('Requesting token for NIC:', nic, blindedToken, signature);
     if (!nic || !blindedToken || !signature) {
       throw new BadRequestException('missing fields');
     }
@@ -133,15 +124,21 @@ export class AppService {
       typeof blindedToken === 'string'
         ? blindedToken
         : Buffer.from(blindedToken as any).toString('base64');
+    const payload = concatUint8([
+      new Uint8Array(Buffer.from(blindedTokenStr, 'base64')),
+      new Uint8Array(Buffer.from(nic, 'utf-8')),
+    ]);
     const signatureStr =
       typeof signature === 'string'
         ? signature
         : Buffer.from(signature as any).toString('base64');
 
     // Verify the Ed25519 signature over the blindedToken using the stored public key
+    const publicKeyBuffer = Buffer.from(registered.public_key, 'base64');
+
     const ok = ed25519.verify(
-      registered.public_key,
-      blindedTokenStr,
+      publicKeyBuffer,
+      Buffer.from(payload),
       signatureStr,
     );
     if (!ok) {
@@ -158,18 +155,12 @@ export class AppService {
       blindedTokenStr,
     );
 
-    // Persist issued token record
-    const issued = this.issuedTokenRepository.create({
-      nic,
-      blinded_token: blindedTokenStr,
-      blind_signature: String(blindSignature),
-    });
-    await this.issuedTokenRepository.save(issued);
+    const blindSignatureStr = Buffer.from(blindSignature).toString('base64');
 
     // Mark eligible voter as having been issued a token to prevent re-issuance
     registered.token_issued = true;
     await this.registeredVoterRepository.save(registered);
 
-    return { success: true, blindSignature };
+    return { success: true, blindSignature: blindSignatureStr };
   }
 }

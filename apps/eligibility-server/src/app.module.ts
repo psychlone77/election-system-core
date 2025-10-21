@@ -2,12 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import {
-  Candidate,
-  DatabaseModule,
-  IssuedToken,
-  RegisteredVoters,
-} from '@app/database';
+import { Candidate, DatabaseModule, RegisteredVoters } from '@app/database';
 import { EligibleVoter } from '@app/database/entities/eligible-voters';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -23,13 +18,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }), // will read ELIG_DB_* env vars
     DatabaseModule.forRoot({
       prefix: 'ELECTION',
-      entities: [RegisteredVoters, IssuedToken, Candidate],
+      entities: [RegisteredVoters, Candidate],
     }), // will read ELECTION_DB_* env vars
     TypeOrmModule.forFeature([EligibleVoter], 'ELIG'),
-    TypeOrmModule.forFeature(
-      [RegisteredVoters, IssuedToken, Candidate],
-      'ELECTION',
-    ),
+    TypeOrmModule.forFeature([RegisteredVoters, Candidate], 'ELECTION'),
   ],
   controllers: [AppController],
   providers: [AppService],
