@@ -16,4 +16,7 @@ export class EligibleVoter {
 
   @Column({ name: 'registration_code' })
   registration_code: string;
+
+  @Column({ default: false })
+  disabled: boolean;
 }
