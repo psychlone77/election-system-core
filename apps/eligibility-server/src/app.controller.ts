@@ -35,7 +35,7 @@ export class AppController {
     @Body() body: { id: string; name: string; party: string },
   ) {
     const { id, name, party } = body;
-    this.appService.postCandidate(id, name, party);
+    await this.appService.postCandidate(id, name, party);
     return { success: true, message: 'Candidate added successfully' };
   }
 

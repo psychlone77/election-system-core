@@ -40,6 +40,17 @@ export async function pemToFile(pem: string, path: string) {
   return await fs.writeFile(path, pem);
 }
 
+export function concatUint8(arrs: Uint8Array[]) {
+  const total = arrs.reduce((s, a) => s + a.length, 0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const a of arrs) {
+    out.set(a, offset);
+    offset += a.length;
+  }
+  return out;
+}
+
 export async function ensureServerKeys(appName: string, secretsDir?: string) {
   const dir =
     secretsDir || path.join(process.cwd(), 'apps', appName, 'secrets');
