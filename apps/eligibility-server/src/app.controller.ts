@@ -50,4 +50,11 @@ export class AppController {
     const { NIC, blinded_token, signature } = body;
     return this.appService.requestToken(NIC, blinded_token, signature);
   }
+
+  @Post('disable-voter')
+  async disableVoter(@Body() body: { NIC: string }) {
+    const { NIC } = body;
+    await this.appService.disableEligibleVoter(NIC);
+    return { success: true, message: 'Voter disabled successfully' };
+  }
 }

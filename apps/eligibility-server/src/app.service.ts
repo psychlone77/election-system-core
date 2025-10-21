@@ -41,6 +41,15 @@ export class AppService {
     return this.eligibleVoterRepository.find();
   }
 
+  async disableEligibleVoter(nic: string) {
+    const voter = await this.eligibleVoterRepository.findOne({ where: { NIC: nic } });
+    if (!voter) {
+      throw new BadRequestException('Voter not found');
+    }
+    voter.disabled = true;
+    return this.eligibleVoterRepository.save(voter);
+  }
+
   getPublicKey() {
     return getPublicKeyFromPemFile(process.env.SECRET_FOLDER_PATH);
   }
@@ -75,7 +84,7 @@ export class AppService {
     }
 
     const eligible = await this.eligibleVoterRepository.findOne({
-      where: { NIC: nic },
+      where: { NIC: nic, disabled: false },
     });
     if (!eligible) {
       throw new BadRequestException('Voter not eligible');
