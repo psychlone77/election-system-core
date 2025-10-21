@@ -16,3 +16,8 @@ export type RequestTokenDto = {
 };
 
 export type BallotPayload = Record<string, number>;
+
+export type LoginDto = {
+  email: string;
+  password: string;
+};
