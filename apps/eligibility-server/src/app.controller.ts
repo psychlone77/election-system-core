@@ -4,6 +4,7 @@ import type {
   RegisterDto,
   RequestTokenDto,
   ServerCheck,
+  LoginDto,
 } from '@election-system-core/shared/types';
 
 @Controller()
@@ -56,5 +57,11 @@ export class AppController {
     const { NIC } = body;
     await this.appService.disableEligibleVoter(NIC);
     return { success: true, message: 'Voter disabled successfully' };
+  }
+
+  @Post('login')
+  async login(@Body() body: LoginDto) {
+    const { email, password } = body;
+    return this.appService.login(email, password);
   }
 }
