@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,7 +13,7 @@ import {
   getPublicKeyFromPemFile,
 } from '@app/crypto/key-store';
 import { blindrsa, ed25519 } from '@app/crypto';
-import { EligibleVoter, RegisteredVoters, Candidate } from '@app/database';
+import { EligibleVoter, RegisteredVoters, Candidate,Admin } from '@app/database';
 
 @Injectable()
 export class AppService {
@@ -23,6 +24,8 @@ export class AppService {
     private registeredVoterRepository: Repository<RegisteredVoters>,
     @InjectRepository(Candidate, 'ELECTION')
     private candidateRepository: Repository<Candidate>,
+    @InjectRepository(Admin, 'ELECTION')
+    private adminRepository: Repository<Admin>,
   ) {}
 
   getCheck(): ServerCheck {
@@ -31,8 +34,39 @@ export class AppService {
       status: 'running',
     };
   }
+
+  async login(email: string, password: string) {
+    if (!email || !password) {
+      throw new BadRequestException('Email and password are required');
+    }
+
+    const admin = await this.adminRepository.findOne({
+      where: { email }
+    });
+
+    if (!admin || admin.password !== password) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    return {
+      success: true,
+      admin: {
+        email: admin.email
+      }
+    };
+  }
+
   getEligibleVoters() {
     return this.eligibleVoterRepository.find();
+  }
+
+  async disableEligibleVoter(nic: string) {
+    const voter = await this.eligibleVoterRepository.findOne({ where: { NIC: nic } });
+    if (!voter) {
+      throw new BadRequestException('Voter not found');
+    }
+    voter.disabled = true;
+    return this.eligibleVoterRepository.save(voter);
   }
 
   getPublicKey() {
@@ -65,7 +99,7 @@ export class AppService {
     }
 
     const eligible = await this.eligibleVoterRepository.findOne({
-      where: { NIC: nic },
+      where: { NIC: nic, disabled: false },
     });
     if (!eligible) {
       throw new BadRequestException('Voter not eligible');

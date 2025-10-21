@@ -24,3 +24,8 @@ export type SubmitBallotDto = {
 };
 
 export type BallotPayload = Record<string, number>;
+
+export type LoginDto = {
+  email: string;
+  password: string;
+};
