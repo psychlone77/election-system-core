@@ -2,10 +2,13 @@ import { Module } from '@nestjs/common';
 import { TallyingServerController } from './tallying-server.controller';
 import { TallyingServerService } from './tallying-server.service';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from '@app/database';
-import { BallotStorage } from '@app/database/entities/ballot-storage';
+import {
+  BallotStorage,
+  Candidate,
+  DatabaseModule,
+  DecryptedBallot,
+} from '@app/database';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Candidate } from '@app/database/entities/candidates';
 
 @Module({
   imports: [
@@ -19,9 +22,9 @@ import { Candidate } from '@app/database/entities/candidates';
     }),
     DatabaseModule.forRoot({
       prefix: 'BS',
-      entities: [BallotStorage],
+      entities: [BallotStorage, DecryptedBallot],
     }),
-    TypeOrmModule.forFeature([BallotStorage], 'BS'),
+    TypeOrmModule.forFeature([BallotStorage, DecryptedBallot], 'BS'),
     TypeOrmModule.forFeature([Candidate], 'ELECTION'),
   ],
   controllers: [TallyingServerController],

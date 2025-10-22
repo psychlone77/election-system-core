@@ -1,5 +1,3 @@
-import { BallotStorage } from '@app/database/entities/ballot-storage';
-import { SpentTokens } from '@app/database/entities/spent-tokens';
 import { ServerCheck, SubmitBallotDto } from '@election-system-core/shared';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -11,6 +9,7 @@ import {
   getPublicKeyFromPemFile,
   pemToDer,
 } from '@app/crypto/key-store';
+import { BallotStorage, PublicBallot, SpentTokens } from '@app/database';
 
 @Injectable()
 export class BallotBoxServerService {
@@ -19,6 +18,8 @@ export class BallotBoxServerService {
     private spentTokensRepository: Repository<SpentTokens>,
     @InjectRepository(BallotStorage, 'BS')
     private ballotStorageRepository: Repository<BallotStorage>,
+    @InjectRepository(PublicBallot, 'BS')
+    private publicBallotRepository: Repository<PublicBallot>,
   ) {}
   getCheck(): ServerCheck {
     return {
@@ -92,30 +93,39 @@ export class BallotBoxServerService {
       encrypted_key: encryptedKey,
       token,
     });
-    const saved = await this.ballotStorageRepository.save(ballotRecord);
-    const ballotId = saved.ballot_id;
+    await this.ballotStorageRepository.save(ballotRecord);
+
+    const public_ballot_id = crypto.randomUUID().toString();
 
     // 6) Hash ballotId + encrypted ballot and sign with Ballot Box private key
     const dataToHash = Buffer.concat([
-      Buffer.from(ballotId, 'utf8'),
-      Buffer.from(String(encryptedBallot), 'utf8'),
+      Buffer.from(public_ballot_id, 'utf8'),
+      Buffer.from(encryptedBallot, 'base64'),
     ]);
-    const hashBuffer = await webcrypto.subtle.digest('SHA-256', dataToHash);
+    const hashedBallotBuffer = await crypto.subtle.digest(
+      'SHA-256',
+      dataToHash,
+    );
+    const hashed_ballot = Buffer.from(hashedBallotBuffer).toString('hex');
+    const publicBallotRecord = this.publicBallotRepository.create({
+      public_ballot_id: crypto.randomUUID(),
+      hashed_ballot: hashed_ballot,
+    });
+    await this.publicBallotRepository.save(publicBallotRecord);
 
     const bbPrivateKey = await getPrivateKeyFromPemFile(
       process.env.SECRET_FOLDER_PATH,
     );
 
-    const signature = await webcrypto.subtle.sign(
+    const signature = await crypto.subtle.sign(
       { name: 'RSA-PSS', saltLength: 64 },
       bbPrivateKey.privateKey,
-      hashBuffer,
+      hashedBallotBuffer,
     );
     const signatureB64 = Buffer.from(signature).toString('base64');
 
     return {
-      ballotId,
-      hash: Buffer.from(hashBuffer).toString('base64'),
+      ballotId: public_ballot_id,
       signature: signatureB64,
     };
   }

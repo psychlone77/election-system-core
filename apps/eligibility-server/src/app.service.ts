@@ -13,7 +13,12 @@ import {
   getPublicKeyFromPemFile,
 } from '@app/crypto/key-store';
 import { blindrsa, ed25519 } from '@app/crypto';
-import { EligibleVoter, RegisteredVoters, Candidate,Admin } from '@app/database';
+import {
+  EligibleVoter,
+  RegisteredVoters,
+  Candidate,
+  Admin,
+} from '@app/database';
 
 @Injectable()
 export class AppService {
@@ -41,7 +46,7 @@ export class AppService {
     }
 
     const admin = await this.adminRepository.findOne({
-      where: { email }
+      where: { email },
     });
 
     if (!admin || admin.password !== password) {
@@ -51,8 +56,8 @@ export class AppService {
     return {
       success: true,
       admin: {
-        email: admin.email
-      }
+        email: admin.email,
+      },
     };
   }
 
@@ -61,7 +66,9 @@ export class AppService {
   }
 
   async disableEligibleVoter(nic: string) {
-    const voter = await this.eligibleVoterRepository.findOne({ where: { NIC: nic } });
+    const voter = await this.eligibleVoterRepository.findOne({
+      where: { NIC: nic },
+    });
     if (!voter) {
       throw new BadRequestException('Voter not found');
     }

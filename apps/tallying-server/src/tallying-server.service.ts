@@ -1,8 +1,7 @@
 import { decryptAesGcm } from '@app/crypto/aes';
 import { getPublicEncryptionKeyFromPemFile } from '@app/crypto/key-store';
 import { reconstructSecretFromShares } from '@app/crypto/threshold';
-import { BallotStorage } from '@app/database/entities/ballot-storage';
-import { Candidate } from '@app/database/entities/candidates';
+import { BallotStorage, Candidate, DecryptedBallot } from '@app/database';
 import { BallotPayload, ServerCheck } from '@election-system-core/shared/types';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +14,8 @@ export class TallyingServerService {
     private ballotStorageRepository: Repository<BallotStorage>,
     @InjectRepository(Candidate, 'ELECTION')
     private candidateRepository: Repository<Candidate>,
+    @InjectRepository(DecryptedBallot, 'BS')
+    private decryptedBallotRepository: Repository<DecryptedBallot>,
   ) {}
   getCheck(): ServerCheck {
     return {
@@ -106,7 +107,15 @@ export class TallyingServerService {
           console.warn(`Skipping invalid ballot id=${ballot.ballot_id}`);
           continue;
         }
-
+        const decryptedBallot = this.decryptedBallotRepository.create({
+          ballot_id: ballot.ballot_id,
+          decrypted_ballot: Buffer.from(decrypted).toString('base64'),
+          encrypted_ballot: ballot.encrypted_ballot,
+          iv: ballot.iv,
+          encrypted_key: ballot.encrypted_key,
+          token: ballot.token,
+        });
+        await this.decryptedBallotRepository.save(decryptedBallot);
         // aggregate
         for (const [candidateId, votes] of Object.entries(payload)) {
           const prev = tally.get(candidateId) ?? 0;

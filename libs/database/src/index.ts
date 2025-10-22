@@ -3,3 +3,7 @@ export * from './entities/eligible-voters';
 export * from './entities/registered-voters';
 export * from './entities/candidates';
 export * from './entities/admins';
+export * from './entities/spent-tokens';
+export * from './entities/ballot-storage';
+export * from './entities/public-ballots';
+export * from './entities/decrypted-ballots';

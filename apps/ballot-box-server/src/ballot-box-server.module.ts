@@ -6,6 +6,7 @@ import { SpentTokens } from '@app/database/entities/spent-tokens';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BallotStorage } from '@app/database/entities/ballot-storage';
+import { PublicBallot } from '@app/database/entities/public-ballots';
 
 @Module({
   imports: [
@@ -19,10 +20,10 @@ import { BallotStorage } from '@app/database/entities/ballot-storage';
     }),
     DatabaseModule.forRoot({
       prefix: 'BS',
-      entities: [BallotStorage],
+      entities: [BallotStorage, PublicBallot],
     }),
     TypeOrmModule.forFeature([SpentTokens], 'ELECTION'),
-    TypeOrmModule.forFeature([BallotStorage], 'BS'),
+    TypeOrmModule.forFeature([BallotStorage, PublicBallot], 'BS'),
   ],
   controllers: [BallotBoxServerController],
   providers: [BallotBoxServerService],
