@@ -84,12 +84,12 @@ export class AppService {
     return this.candidateRepository.find();
   }
 
-  async postCandidate(id: string, name: string, party: string) {
-    if (!id || !name || !party) {
+  async postCandidate(name: string, party: string) {
+    if (!name || !party) {
       throw new BadRequestException('missing fields');
     }
     const record = this.candidateRepository.create({
-      id,
+      id: crypto.randomUUID(),
       name,
       party,
     });
