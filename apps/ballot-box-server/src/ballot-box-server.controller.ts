@@ -21,6 +21,11 @@ export class BallotBoxServerController {
     return this.ballotBoxServerService.getPublicKey();
   }
 
+  @Get('ballots')
+  async getBallots() {
+    return this.ballotBoxServerService.getBallots();
+  }
+
   @Post('submit-ballot')
   async submitBallot(
     @Body()

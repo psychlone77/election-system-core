@@ -35,6 +35,11 @@ export class BallotBoxServerService {
     return publicPem;
   }
 
+  async getBallots() {
+    const ballots = await this.ballotStorageRepository.find();
+    return ballots;
+  }
+
   async submitBallot({
     encryptedBallot,
     iv,
