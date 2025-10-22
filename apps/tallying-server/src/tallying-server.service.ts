@@ -1,7 +1,12 @@
 import { decryptAesGcm } from '@app/crypto/aes';
 import { getPublicEncryptionKeyFromPemFile } from '@app/crypto/key-store';
 import { reconstructSecretFromShares } from '@app/crypto/threshold';
-import { BallotStorage, Candidate, DecryptedBallot } from '@app/database';
+import {
+  BallotStorage,
+  Candidate,
+  DecryptedBallot,
+  TallyingResults,
+} from '@app/database';
 import { BallotPayload, ServerCheck } from '@election-system-core/shared/types';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +21,8 @@ export class TallyingServerService {
     private candidateRepository: Repository<Candidate>,
     @InjectRepository(DecryptedBallot, 'BS')
     private decryptedBallotRepository: Repository<DecryptedBallot>,
+    @InjectRepository(TallyingResults, 'BS')
+    private tallyingResultsRepository: Repository<TallyingResults>,
   ) {}
   getCheck(): ServerCheck {
     return {
@@ -53,6 +60,14 @@ export class TallyingServerService {
     return false;
   }
 
+  async getFinalResults() {
+    return this.tallyingResultsRepository.find();
+  }
+
+  async getDecryptedBallots() {
+    return this.decryptedBallotRepository.find();
+  }
+
   async startTallyingProcess() {
     // reconstruct private key (your threshold function returns string/Buffer)
     const privateKey = await reconstructSecretFromShares(
@@ -64,7 +79,7 @@ export class TallyingServerService {
 
     // aggregated counts - initialize with candidates from DB so missing candidates are present with 0
     const tally = new Map<string, number>();
-    let candidates: Candidate[];
+    let candidates: Candidate[] = [];
     try {
       candidates = await this.candidateRepository.find();
       for (const c of candidates) {
@@ -133,9 +148,32 @@ export class TallyingServerService {
     const results = Array.from(tally.entries()).map(([candidate, count]) => ({
       candidate,
       name: candidates.find((c) => c.id === candidate)?.name ?? 'Unknown',
+      party: candidates.find((c) => c.id === candidate)?.party ?? 'Unknown',
       count,
     }));
     console.log('Tally results:', results);
+
+    // persist final tally into TallyingResults table
+    const resultsEntities: TallyingResults[] = [];
+    for (const [candidateId, count] of tally.entries()) {
+      const c = candidates.find((x) => x.id === candidateId);
+      resultsEntities.push(
+        this.tallyingResultsRepository.create({
+          candidate_id: candidateId,
+          candidate_name: c?.name ?? 'Unknown',
+          candidate_party: c?.party ?? 'Unknown',
+          votes: count,
+        }),
+      );
+    }
+
+    try {
+      if (resultsEntities.length) {
+        await this.tallyingResultsRepository.save(resultsEntities);
+      }
+    } catch (err) {
+      console.warn('Failed to save tallying results:', String(err));
+    }
 
     return { results };
   }

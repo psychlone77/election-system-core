@@ -7,6 +7,7 @@ import {
   Candidate,
   DatabaseModule,
   DecryptedBallot,
+  TallyingResults,
 } from '@app/database';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -22,9 +23,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
     DatabaseModule.forRoot({
       prefix: 'BS',
-      entities: [BallotStorage, DecryptedBallot],
+      entities: [BallotStorage, DecryptedBallot, TallyingResults],
     }),
-    TypeOrmModule.forFeature([BallotStorage, DecryptedBallot], 'BS'),
+    TypeOrmModule.forFeature(
+      [BallotStorage, DecryptedBallot, TallyingResults],
+      'BS',
+    ),
     TypeOrmModule.forFeature([Candidate], 'ELECTION'),
   ],
   controllers: [TallyingServerController],

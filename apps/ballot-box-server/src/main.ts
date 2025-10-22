@@ -32,6 +32,7 @@ async function bootstrap() {
   await keystore.ensureServerKeys('ballot-box-server');
   await loadPublicKeys();
   const app = await NestFactory.create(BallotBoxServerModule);
+  app.enableCors();
   await app.listen(process.env.port ?? 3000);
 }
 void bootstrap();

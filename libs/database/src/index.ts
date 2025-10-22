@@ -7,3 +7,4 @@ export * from './entities/spent-tokens';
 export * from './entities/ballot-storage';
 export * from './entities/public-ballots';
 export * from './entities/decrypted-ballots';
+export * from './entities/tallying-results';

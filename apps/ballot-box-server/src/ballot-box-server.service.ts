@@ -36,7 +36,7 @@ export class BallotBoxServerService {
   }
 
   async getBallots() {
-    const ballots = await this.ballotStorageRepository.find();
+    const ballots = await this.publicBallotRepository.find();
     return ballots;
   }
 
@@ -113,7 +113,7 @@ export class BallotBoxServerService {
     );
     const hashed_ballot = Buffer.from(hashedBallotBuffer).toString('hex');
     const publicBallotRecord = this.publicBallotRepository.create({
-      public_ballot_id: crypto.randomUUID(),
+      public_ballot_id,
       hashed_ballot: hashed_ballot,
     });
     await this.publicBallotRepository.save(publicBallotRecord);

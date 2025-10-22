@@ -16,6 +16,16 @@ export class TallyingServerController {
     return this.tallyingServerService.getPublicKey();
   }
 
+  @Get('final-results')
+  getFinalResults() {
+    return this.tallyingServerService.getFinalResults();
+  }
+
+  @Get('decrypted-ballots')
+  getDecryptedBallots() {
+    return this.tallyingServerService.getDecryptedBallots();
+  }
+
   @Get('results')
   getResults() {
     return this.tallyingServerService.startTallyingProcess();
