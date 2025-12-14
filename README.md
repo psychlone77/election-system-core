@@ -6,6 +6,10 @@ A secure, privacy-preserving electronic voting system built with TypeScript and 
 
 This workspace contains three core servers and shared cryptographic libraries that work together to provide a secure voting infrastructure.  The system ensures voter anonymity through blind signature tokens while maintaining vote integrity and auditability. 
 
+*For repositories for the admin panel and mobile app see the below links.*
+- https://github.com/psychlone77/election-system-admin-panel
+- https://github.com/psychlone77/election-system-mobile-app
+
 ## Key Features
 
 - **Voter Anonymity**: Blind RSA signatures prevent linking voter identity to their ballot
